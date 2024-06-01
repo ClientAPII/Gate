@@ -27,7 +27,7 @@ public class Teleportation implements Listener {
 
     public void initiateTeleport(Player player, Gate gate) {
         Location portalLocation = player.getLocation().clone().add(player.getLocation().getDirection().multiply(2)); // Zwei Blöcke vor dem Spieler
-        createParticlePortal(portalLocation);
+        createParticlePortal(portalLocation, player.getLocation().getYaw());
         activePortals.put(player.getUniqueId(), portalLocation);
         destinationGates.put(player.getUniqueId(), gate);
         player.sendMessage("Portal erschaffen. Gehe durch das Portal, um dich zu teleportieren.");
@@ -65,7 +65,7 @@ public class Teleportation implements Listener {
         if (destinationGate != null) {
             Location destination = destinationGate.getLocation();
             player.teleport(destination);
-            createParticlePortal(destination); // Portal auch am Ziel erstellen
+            createParticlePortal(destination, player.getLocation().getYaw()); // Portal auch am Ziel erstellen
             activePortals.remove(playerId);
             destinationGates.remove(playerId);
             player.sendMessage("Teleportiert!");
@@ -79,25 +79,32 @@ public class Teleportation implements Listener {
         return dx < 1 && dy < 1 && dz < 1;
     }
 
-    public void createParticlePortal(Location location) {
+    public void createParticlePortal(Location location, float yaw) {
         new BukkitRunnable() {
-            int timer = 50; // Reduced active time
-            double radiusX = 2.0; // Radius in X-Richtung
-            double radiusY = 4.0; // Radius in Y-Richtung
+            int timer = 40; // Timer for about 10 seconds (200 ticks / 20 ticks per second)
+            double radiusX = 2.0; // Radius in X direction
+            double radiusY = 4.0; // Radius in Y direction
             double centerX = location.getX();
-            double centerY = location.getY() + 1; // Leicht über dem Boden
+            double centerY = location.getY() + 1; // Slightly above the ground
             double centerZ = location.getZ();
 
             @Override
             public void run() {
                 if (timer <= 0) {
                     cancel();
+                    activePortals.remove(location); // Remove portal after the timer ends
                     return;
                 }
+
+                // Adjust particle positions based on player's yaw to rotate around the Y-axis
+                double angle = Math.toRadians(yaw);
+                double cos = Math.cos(angle);
+                double sin = Math.sin(angle);
+
                 for (double t = 0; t < Math.PI * 2; t += Math.PI / 16) {
-                    double x = centerX + radiusX * Math.cos(t);
+                    double x = centerX + radiusX * Math.cos(t) * cos;
                     double y = centerY + radiusY * Math.sin(t);
-                    double z = centerZ;
+                    double z = centerZ + radiusX * Math.cos(t) * sin;
                     Location particleLocation = new Location(location.getWorld(), x, y, z);
                     location.getWorld().spawnParticle(Particle.PORTAL, particleLocation, 0);
                     location.getWorld().spawnParticle(Particle.END_ROD, particleLocation, 0);
@@ -113,9 +120,9 @@ public class Teleportation implements Listener {
                     Particle.DustOptions dustOptions = new Particle.DustOptions(Color.fromRGB(colorValue, 0, colorValue), 1.0F);
 
                     for (double t = 0; t < Math.PI * 2; t += Math.PI / 16) {
-                        double x = centerX + currentRadiusX * Math.cos(t);
+                        double x = centerX + currentRadiusX * Math.cos(t) * cos;
                         double y = centerY + currentRadiusY * Math.sin(t);
-                        double z = centerZ;
+                        double z = centerZ + currentRadiusX * Math.cos(t) * sin;
                         Location particleLocation = new Location(location.getWorld(), x, y, z);
                         location.getWorld().spawnParticle(Particle.REDSTONE, particleLocation, 1, dustOptions);
                     }
