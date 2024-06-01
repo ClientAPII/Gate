@@ -32,6 +32,10 @@ public class Teleportation implements Listener {
         destinationGates.put(player.getUniqueId(), gate);
         player.sendMessage("Portal erschaffen. Gehe durch das Portal, um dich zu teleportieren.");
 
+        // Create destination portal immediately
+        Location destination = gate.getLocation();
+        createParticlePortal(destination, player.getLocation().getYaw());
+
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -65,7 +69,6 @@ public class Teleportation implements Listener {
         if (destinationGate != null) {
             Location destination = destinationGate.getLocation();
             player.teleport(destination);
-            createParticlePortal(destination, player.getLocation().getYaw()); // Portal auch am Ziel erstellen
             activePortals.remove(playerId);
             destinationGates.remove(playerId);
             player.sendMessage("Teleportiert!");
@@ -94,7 +97,15 @@ public class Teleportation implements Listener {
             public void run() {
                 if (timer <= 0) {
                     cancel();
-                    activePortals.remove(location); // Remove portal after the timer ends
+
+                    // Schedule task to remove teleport point 2 seconds after the portal disappears
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            activePortals.values().remove(location); // Remove portal location after buffer period
+                        }
+                    }.runTaskLater(Main.getPlugin(Main.class), 40); // 40 ticks = 2 seconds
+
                     return;
                 }
 
