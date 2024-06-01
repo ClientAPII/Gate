@@ -84,10 +84,10 @@ public class Teleportation implements Listener {
             int timer = 80; // Timer for about 20 seconds (400 ticks / 20 ticks per second)
             double initialRadiusX = 0.0;
             double initialRadiusY = 0.0;
-            double maxRadiusX = 2.0; // Maximum radius in X direction
-            double maxRadiusY = 4.0; // Maximum radius in Y direction
+            double maxRadiusX = 1.5; // Maximum radius in X direction
+            double maxRadiusY = 2.5; // Maximum radius in Y direction
             double centerX = location.getX();
-            double centerY = location.getY() + 1; // Slightly above the ground
+            double centerY = location.getY() + 2; // Slightly above the ground
             double centerZ = location.getZ();
 
             @Override
@@ -118,14 +118,15 @@ public class Teleportation implements Listener {
                 double cos = Math.cos(angle);
                 double sin = Math.sin(angle);
 
-                for (double t = 0; t < Math.PI * 2; t += Math.PI / 16) {
+                for (double t = 0; t < Math.PI * 2; t += Math.PI / 32) { // Increased density
                     double x = centerX + radiusX * Math.cos(t) * cos;
                     double y = centerY + radiusY * Math.sin(t);
                     double z = centerZ + radiusX * Math.cos(t) * sin;
                     Location particleLocation = new Location(location.getWorld(), x, y, z);
-                    location.getWorld().spawnParticle(Particle.PORTAL, particleLocation, 0);
-                    location.getWorld().spawnParticle(Particle.END_ROD, particleLocation, 0);
-                    location.getWorld().spawnParticle(Particle.ENCHANTMENT_TABLE, particleLocation, 0);
+                    // Spawn particles with zero velocity to prevent spreading
+                    //location.getWorld().spawnParticle(Particle.PORTAL, particleLocation, 3, 0, 0, 0, 0); // More particles
+                    //location.getWorld().spawnParticle(Particle.SPELL_INSTANT, particleLocation, 3, 0, 0, 0, 0); // More particles
+                    //location.getWorld().spawnParticle(Particle.ENCHANTMENT_TABLE, particleLocation, 3, 0, 0, 0, 0); // More particles
                 }
 
                 // Create concentric ovals with increasing darkness
@@ -136,12 +137,13 @@ public class Teleportation implements Listener {
                     int colorValue = (int) (255 * (1 - factor));
                     Particle.DustOptions dustOptions = new Particle.DustOptions(Color.fromRGB(colorValue, 0, colorValue), 1.0F);
 
-                    for (double t = 0; t < Math.PI * 2; t += Math.PI / 16) {
+                    for (double t = 0; t < Math.PI * 2; t += Math.PI / 32) { // Increased density
                         double x = centerX + currentRadiusX * Math.cos(t) * cos;
                         double y = centerY + currentRadiusY * Math.sin(t);
                         double z = centerZ + currentRadiusX * Math.cos(t) * sin;
                         Location particleLocation = new Location(location.getWorld(), x, y, z);
-                        location.getWorld().spawnParticle(Particle.REDSTONE, particleLocation, 1, dustOptions);
+                        // Spawn particles with zero velocity to prevent spreading
+                        location.getWorld().spawnParticle(Particle.REDSTONE, particleLocation, 2, 0, 0, 0, 0, dustOptions); // More particles
                     }
                 }
 
