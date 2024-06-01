@@ -105,7 +105,7 @@ public class Teleportation implements Listener {
                 }
 
                 // Create concentric ovals with increasing darkness
-                for (int i = 0; i <= 40; i++) {
+                for (int i = 0; i <= 20; i++) {
                     double factor = i / 20.0;
                     double currentRadiusX = radiusX * (1 - factor);
                     double currentRadiusY = radiusY * (1 - factor);
