@@ -81,9 +81,11 @@ public class Teleportation implements Listener {
 
     public void createParticlePortal(Location location, float yaw) {
         new BukkitRunnable() {
-            int timer = 40; // Timer for about 10 seconds (200 ticks / 20 ticks per second)
-            double radiusX = 2.0; // Radius in X direction
-            double radiusY = 4.0; // Radius in Y direction
+            int timer = 80; // Timer for about 20 seconds (400 ticks / 20 ticks per second)
+            double initialRadiusX = 0.0;
+            double initialRadiusY = 0.0;
+            double maxRadiusX = 2.0; // Maximum radius in X direction
+            double maxRadiusY = 4.0; // Maximum radius in Y direction
             double centerX = location.getX();
             double centerY = location.getY() + 1; // Slightly above the ground
             double centerZ = location.getZ();
@@ -94,6 +96,21 @@ public class Teleportation implements Listener {
                     cancel();
                     activePortals.remove(location); // Remove portal after the timer ends
                     return;
+                }
+
+                // Calculate current radius based on the timer
+                double radiusX, radiusY;
+                if (timer > 60) { // Opening phase (20 ticks)
+                    double progress = (80 - timer) / 20.0;
+                    radiusX = initialRadiusX + progress * (maxRadiusX - initialRadiusX);
+                    radiusY = initialRadiusY + progress * (maxRadiusY - initialRadiusY);
+                } else if (timer > 20) { // Active phase (40 ticks)
+                    radiusX = maxRadiusX;
+                    radiusY = maxRadiusY;
+                } else { // Closing phase (20 ticks)
+                    double progress = (20 - timer) / 20.0;
+                    radiusX = maxRadiusX - progress * (maxRadiusX - initialRadiusX);
+                    radiusY = maxRadiusY - progress * (maxRadiusY - initialRadiusY);
                 }
 
                 // Adjust particle positions based on player's yaw to rotate around the Y-axis
