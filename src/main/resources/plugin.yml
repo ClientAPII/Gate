@@ -1,0 +1,11 @@
+name: GatePlugin
+main: de.clientapi.gate.Main
+version: 1.0
+author: ClientAPI
+commands:
+  setgate:
+    description: Sets a gate at the player's current location.
+  gate:
+    description: Opens the gate GUI for the player.
+  delgate:
+    description: Deletes the gate at the player's current location.
